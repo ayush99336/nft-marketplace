@@ -77,7 +77,7 @@ export default function MintNFT({ wallet, onMinted }: { wallet: string | null; o
       setMetadataIpfsUrl(metadataUrl);
       setUploading(false);
       // 3. Mint NFT using your contract
-      // @ts-expect-error
+      // @ts-expect-error - window.ethereum type is handled by global declaration
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = getContract(signer);

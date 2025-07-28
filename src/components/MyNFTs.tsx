@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { getContract } from "../../utils/contract";
 import NFTCard from "./NFTCard";
@@ -19,20 +19,20 @@ export default function MyNFTs({ account }: { account: string | null }) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"owned" | "listed">("owned");
 
-  const fetchMyNFTs = async () => {
+  const fetchMyNFTs = useCallback(async () => {
     if (!account) return;
     setLoading(true);
     try {
       // Must use wallet provider to get msg.sender context for contract functions
-      if (typeof window !== "undefined" && (window as any).ethereum) {
-        const provider = new ethers.BrowserProvider((window as any).ethereum);
+      if (typeof window !== "undefined" && window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = getContract(signer);
         
         // Use built-in contract functions that filter by msg.sender
         const ownedItems = await contract.fetchMyNFTs();
         const ownedNFTs = await Promise.all(
-          ownedItems.map(async (item: any) => {
+          ownedItems.map(async (item: { tokenId: { toString: () => string }; seller: string; owner: string; price: bigint; sold: boolean; listed: boolean }) => {
             const tokenURI = await contract.tokenURI(item.tokenId);
             return {
               tokenId: item.tokenId.toString(),
@@ -49,7 +49,7 @@ export default function MyNFTs({ account }: { account: string | null }) {
 
         const listedItems = await contract.fetchItemsListed();
         const listedNFTs = await Promise.all(
-          listedItems.map(async (item: any) => {
+          listedItems.map(async (item: { tokenId: { toString: () => string }; seller: string; owner: string; price: bigint; sold: boolean; listed: boolean }) => {
             const tokenURI = await contract.tokenURI(item.tokenId);
             return {
               tokenId: item.tokenId.toString(),
@@ -74,11 +74,11 @@ export default function MyNFTs({ account }: { account: string | null }) {
       setListedNFTs([]);
     }
     setLoading(false);
-  };
+  }, [account]);
 
   useEffect(() => {
     fetchMyNFTs();
-  }, [account]);
+  }, [fetchMyNFTs]);
 
   if (!account) {
     return (
@@ -124,7 +124,7 @@ export default function MyNFTs({ account }: { account: string | null }) {
           {activeTab === "owned" ? (
             myNFTs.length === 0 ? (
               <div className="col-span-full text-center py-8">
-                <p className="text-gray-500">You don't own any NFTs yet</p>
+                <p className="text-gray-500">You don&apos;t own any NFTs yet</p>
               </div>
             ) : (
               myNFTs.map((nft) => (
@@ -141,7 +141,7 @@ export default function MyNFTs({ account }: { account: string | null }) {
           ) : (
             listedNFTs.length === 0 ? (
               <div className="col-span-full text-center py-8">
-                <p className="text-gray-500">You haven't listed any NFTs yet</p>
+                <p className="text-gray-500">You haven&apos;t listed any NFTs yet</p>
               </div>
             ) : (
               listedNFTs.map((nft) => (

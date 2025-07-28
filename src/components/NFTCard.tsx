@@ -29,7 +29,7 @@ export default function NFTCard({
   showActions = true
 }: NFTCardProps) {
   const [loading, setLoading] = useState(false);
-  const [metadata, setMetadata] = useState<any>(null);
+  const [metadata, setMetadata] = useState<{ name?: string; description?: string; image?: string } | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showRelistModal, setShowRelistModal] = useState(false);
   const [relistPrice, setRelistPrice] = useState("");
@@ -48,16 +48,17 @@ export default function NFTCard({
     if (!account) return alert("Connect wallet first");
     setLoading(true);
     try {
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum!);
       const signer = await provider.getSigner();
       const contract = getContract(signer);
       const tx = await contract.createMarketSale(tokenId, { value: ethers.parseEther(price) });
       await tx.wait();
       alert("NFT purchased successfully!");
       if (onAction) onAction();
-    } catch (e: any) {
-      console.error("Buy NFT error:", e);
-      alert("Purchase failed: " + (e?.reason || e?.message || e));
+    } catch (error: unknown) {
+      console.error("Buy NFT error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert("Purchase failed: " + errorMessage);
     }
     setLoading(false);
   };
@@ -66,16 +67,17 @@ export default function NFTCard({
     if (!account) return alert("Connect wallet first");
     setLoading(true);
     try {
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum!);
       const signer = await provider.getSigner();
       const contract = getContract(signer);
       const tx = await contract.delistMarketItem(tokenId);
       await tx.wait();
       alert("NFT delisted successfully!");
       if (onAction) onAction();
-    } catch (e: any) {
-      console.error("Delist NFT error:", e);
-      alert("Delist failed: " + (e?.reason || e?.message || e));
+    } catch (error: unknown) {
+      console.error("Delist NFT error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert("Delist failed: " + errorMessage);
     }
     setLoading(false);
   };
@@ -84,7 +86,7 @@ export default function NFTCard({
     if (!account || !relistPrice) return alert("Please enter a price");
     setLoading(true);
     try {
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum!);
       const signer = await provider.getSigner();
       const contract = getContract(signer);
       const listingPrice = await contract.getListingPrice();
@@ -94,9 +96,10 @@ export default function NFTCard({
       setShowRelistModal(false);
       setRelistPrice("");
       if (onAction) onAction();
-    } catch (e: any) {
-      console.error("Relist NFT error:", e);
-      alert("Relist failed: " + (e?.reason || e?.message || e));
+    } catch (error: unknown) {
+      console.error("Relist NFT error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert("Relist failed: " + errorMessage);
     }
     setLoading(false);
   };

@@ -27,7 +27,7 @@ export default function Marketplace({ account, onRefresh }: { account: string | 
       const marketItems = await contract.fetchMarketItems();
       
       const formattedItems = await Promise.all(
-        marketItems.map(async (item: any) => {
+        marketItems.map(async (item: { tokenId: { toString: () => string }; seller: string; owner: string; price: bigint; sold: boolean; listed: boolean }) => {
           let tokenURI = "";
           try {
             tokenURI = await contract.tokenURI(item.tokenId);
@@ -91,7 +91,7 @@ export default function Marketplace({ account, onRefresh }: { account: string | 
             <label className="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as "price-low" | "price-high" | "newest")}
               className="border border-gray-300 rounded-md px-3 py-2 text-sm"
             >
               <option value="newest">Newest First</option>

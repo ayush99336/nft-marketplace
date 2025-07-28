@@ -1,7 +1,6 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { ethers } from "ethers";
 import dynamic from "next/dynamic";
 
 const MintNFT = dynamic(() => import("../components/MintNFT"), { ssr: false });
@@ -18,9 +17,9 @@ export default function Home() {
 
   // Connect wallet
   async function connectWallet() {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    if (typeof window !== "undefined" && window.ethereum) {
       try {
-        const accounts = await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
         setAccount(accounts[0]);
       } catch (error) {
         console.error("Failed to connect wallet:", error);
@@ -42,8 +41,8 @@ export default function Home() {
 
   useEffect(() => {
     // Check if wallet is already connected
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      (window as any).ethereum.request({ method: "eth_accounts" })
+    if (typeof window !== "undefined" && window.ethereum) {
+      window.ethereum.request({ method: "eth_accounts" })
         .then((accounts: string[]) => {
           if (accounts.length > 0) {
             setAccount(accounts[0]);
@@ -51,12 +50,12 @@ export default function Home() {
         });
 
       // Listen for account changes
-      (window as any).ethereum.on("accountsChanged", (accounts: string[]) => {
+      window.ethereum.on("accountsChanged", (accounts: string[]) => {
         setAccount(accounts[0] || null);
       });
 
       // Listen for network changes
-      (window as any).ethereum.on("chainChanged", () => {
+      window.ethereum.on("chainChanged", () => {
         window.location.reload();
       });
     }
