@@ -10,6 +10,7 @@ interface MarketItem {
   price: string;
   sold: boolean;
   listed: boolean;
+  tokenURI?: string;
 }
 
 export default function Marketplace({ account, onRefresh }: { account: string | null; onRefresh?: () => void }) {
@@ -25,14 +26,26 @@ export default function Marketplace({ account, onRefresh }: { account: string | 
       const contract = getContract(provider);
       const marketItems = await contract.fetchMarketItems();
       
-      const formattedItems = marketItems.map((item: any) => ({
-        tokenId: item.tokenId.toString(),
-        seller: item.seller,
-        owner: item.owner,
-        price: ethers.formatEther(item.price),
-        sold: item.sold,
-        listed: item.listed,
-      }));
+      const formattedItems = await Promise.all(
+        marketItems.map(async (item: any) => {
+          let tokenURI = "";
+          try {
+            tokenURI = await contract.tokenURI(item.tokenId);
+          } catch (e) {
+            console.error(`Failed to fetch tokenURI for token ${item.tokenId}:`, e);
+          }
+
+          return {
+            tokenId: item.tokenId.toString(),
+            seller: item.seller,
+            owner: item.owner,
+            price: ethers.formatEther(item.price),
+            sold: item.sold,
+            listed: item.listed,
+            tokenURI,
+          };
+        })
+      );
 
       setItems(formattedItems);
     } catch (e) {
